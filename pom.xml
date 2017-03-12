@@ -21,11 +21,15 @@
         <logback.version>1.1.7</logback.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.10.19</mockito.version>
+
+        <!-- Plugins -->
+        <soapui-maven-plugin.version>5.2.1</soapui-maven-plugin.version>
     </properties>
 
     <!-- MODULES -->
     <modules>
         <module>csv-reader</module>
+        <module>soapui-runner</module>
     </modules>
 
     <!-- DEPENDENCIES -->
@@ -100,4 +104,38 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <!-- REPOSITORIES -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>smartbear</id>
+            <name>Smartbear Maven Repository</name>
+            <url>http://smartbearsoftware.com/repository/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- BUILD -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.smartbear.soapui</groupId>
+                    <artifactId>soapui-maven-plugin</artifactId>
+                    <version>${soapui-maven-plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>no.acntech.test</groupId>
+                            <artifactId>acntech-csv-reader</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>no.acntech.test</groupId>
+                            <artifactId>acntech-soapui-runner</artifactId>
+                            <version>${project.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

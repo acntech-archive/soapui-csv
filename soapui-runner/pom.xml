@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>acntech-soapui-csv</artifactId>
+        <groupId>no.acntech.test</groupId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>acntech-soapui-runner</artifactId>
+
+    <!-- DEPENDENCIES -->
+    <dependencies>
+    </dependencies>
+
+    <!-- BUILD -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.smartbear.soapui</groupId>
+                <artifactId>soapui-maven-plugin</artifactId>
+                <configuration>
+                    <projectFile>${project.basedir}/src/main/resources/HelloService-soapui-project.xml</projectFile>
+                    <testSuite>HelloBinding TestSuite</testSuite>
+                    <testCase>Controller TestCase</testCase>
+                    <outputFolder>${project.build.directory}</outputFolder>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

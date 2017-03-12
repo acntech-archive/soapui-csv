@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project id="af35b3a5-9091-4d3c-bd5a-24297fe037f6" activeEnvironment="Default" name="HelloService" resourceRoot="${projectDir}" soapui-version="5.3.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="e0c61316-d4e3-4dd6-b1fb-02e64172ebbd" wsaVersion="NONE" name="HelloBinding" type="wsdl" bindingName="{http://ws.acntech.no/wsdl/HelloService.wsdl}HelloBinding" soapVersion="1_1" anonymous="optional" definition="HelloService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/home/thomas/work/acntech/workspace/soapui-csv/soapui-runner/src/main/resources/HelloService.wsdl"><con:part><con:url>file:/home/thomas/work/acntech/workspace/soapui-csv/soapui-runner/src/main/resources/HelloService.wsdl</con:url><con:content><![CDATA[<definitions name="HelloService" targetNamespace="http://ws.acntech.no/wsdl/HelloService.wsdl" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://ws.acntech.no/wsdl/HelloService.wsdl" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <message name="SayHelloRequest">
+    <part name="firstName" type="xsd:string"/>
+  </message>
+  <message name="SayHelloResponse">
+    <part name="greeting" type="xsd:string"/>
+  </message>
+  <portType name="HelloPortType">
+    <operation name="sayHello">
+      <input message="tns:SayHelloRequest"/>
+      <output message="tns:SayHelloResponse"/>
+    </operation>
+  </portType>
+  <binding name="HelloBinding" type="tns:HelloPortType">
+    <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="sayHello">
+      <soap:operation soapAction="sayHello"/>
+      <input>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:no:acntech:ws:helloservice" use="encoded"/>
+      </input>
+      <output>
+        <soap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="urn:no:acntech:ws:helloservice" use="encoded"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="HelloService">
+    <documentation>WSDL File for HelloService</documentation>
+    <port binding="tns:HelloBinding" name="HelloPort">
+      <soap:address location="http://ws.acntech.no/SayHello/"/>
+    </port>
+  </service>
+</definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://ws.acntech.no/SayHello/</con:endpoint></con:endpoints><con:operation id="b8c2b7c5-1bd9-403a-b810-de9102f3ccbb" isOneWay="false" action="sayHello" name="sayHello" bindingOperationName="sayHello" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="ee306450-14eb-43da-96f9-a02ccb5a4593" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/HelloService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:no:acntech:ws:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHello soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <firstName xsi:type="xsd:string">Målfrid</firstName>
+      </urn:sayHello>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:testSuite id="7785970e-79ef-4e1c-af22-902991baa191" name="HelloBinding TestSuite"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase id="84cca096-449b-4dad-854d-c7042e516ea1" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Controller TestCase" searchProperties="true"><con:settings/><con:testStep type="groovy" name="CSV Runner" id="fa1b3c37-c591-4f91-89e7-2005e55272c4"><con:settings/><con:config><script>import no.acntech.test.csv.CsvReader
+import no.acntech.test.soapui.Person
+
+def testSuiteName = testRunner.testCase.testSuite.getPropertyValue( "testSuiteName" )
+def testCaseName = testRunner.testCase.testSuite.getPropertyValue( "testCaseName" )
+def csvFileName = testRunner.testCase.testSuite.getPropertyValue( "csvFileName" )
+def thinkTime = testRunner.testCase.testSuite.getPropertyValue( "thinkTime" )
+
+def thinkTimeMillis = Long.parseLong( thinkTime )
+def csvFile = new File( csvFileName as String )
+def asyncRun = false;
+
+if ( !csvFile.exists() ) {
+	log.error( "CSV file $csvFile.absolutePath does not exist" )
+} else if ( !csvFile.isFile() ) {
+	log.error( "$csvFile.absolutePath is not a file" )
+} else {
+	log.info( "Reading CSV file $csvFile.absolutePath" )
+	
+	def csvRecords = CsvReader.read( csvFile, Person.class )
+
+	log.info( "Found $csvRecords.size CSV records in file" )
+
+	def tc = testRunner.testCase.testSuite.project.testSuites[testSuiteName].testCases[testCaseName]
+	
+	for ( csvRecord in csvRecords ) {
+		tc.setPropertyValue( "firstName", csvRecord.getFirstName() )
+		tc.setPropertyValue( "lastName", csvRecord.getLastName() )
+		
+		def runner = tc.run( null, asyncRun )
+		
+		log.debug( "Status: $runner.status, time taken for TestCase was: $runner.timeTaken ms" )
+
+		sleep( thinkTimeMillis )
+	}
+}</script></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="0491a343-6ebe-4121-aff8-195df03cc2dd" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="sayHello TestCase" searchProperties="true"><con:settings/><con:testStep type="request" id="b5492020-8a42-4b8c-863c-4c1a656e98b7" name="sayHello"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>HelloBinding</con:interface><con:operation>sayHello</con:operation><con:request name="sayHello" id="edf0003a-dac0-462d-a53d-e08fd98c3b29"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>${#TestSuite#webserviceURL}</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:no:acntech:ws:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHello soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <firstName xsi:type="xsd:string">${#TestCase#firstName}</firstName>
+      </urn:sayHello>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="sayHello" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties><con:property><con:name>firstName</con:name><con:value>Thomas</con:value></con:property><con:property><con:name>lastName</con:name><con:value>Johansen</con:value></con:property></con:properties></con:testCase><con:properties><con:property><con:name>testSuiteName</con:name><con:value>HelloBinding TestSuite</con:value></con:property><con:property><con:name>testCaseName</con:name><con:value>sayHello TestCase</con:value></con:property><con:property><con:name>csvFileName</con:name><con:value>/home/thomas/work/acntech/workspace/names.csv</con:value></con:property><con:property><con:name>thinkTime</con:name><con:value>200</con:value></con:property><con:property><con:name>webserviceURL</con:name><con:value>http://localhost:8080/HelloService</con:value></con:property></con:properties></con:testSuite><con:mockService id="e5ff88c3-d5f5-4c55-92ab-2b0828659eb9" port="8080" path="/HelloService" host="localhost" name="HelloBinding MockService" outgoingWss="" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-version">false</con:setting></con:settings><con:properties/><con:mockOperation name="sayHello" id="678aea13-3598-40f0-9b95-f420b5ef6625" interface="HelloBinding" operation="sayHello"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Response 1" id="54212317-be0c-4045-885c-166bd6e66d5e" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:script>def holder = new com.eviware.soapui.support.XmlHolder( mockRequest.requestContent )
+def firstName = holder["//firstName"]
+def greeting = "Hello $firstName!"
+log.info( greeting )
+requestContext.greeting = greeting</con:script><con:responseContent><![CDATA[<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:no:acntech:ws:helloservice">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <urn:sayHelloResponse soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+         <greeting xsi:type="xsd:string">${greeting}</greeting>
+      </urn:sayHelloResponse>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="sayHello"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/></con:soapui-project>
