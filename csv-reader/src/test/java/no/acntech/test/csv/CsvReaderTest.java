@@ -23,14 +23,14 @@ public class CsvReaderTest {
     public void testThatNullFileThrowsException() throws Exception {
         exception.expect(IllegalArgumentException.class);
 
-        CsvReader.read(null, null);
+        CsvReader.readAsObjects(null, null);
     }
 
     @Test
     public void testThatNullValueObjectClassThrowsException() throws Exception {
         exception.expect(IllegalArgumentException.class);
 
-        CsvReader.read(new File(""), null);
+        CsvReader.readAsObjects(new File(""), null);
     }
 
     @Test
@@ -38,7 +38,7 @@ public class CsvReaderTest {
         exception.expect(CsvReaderException.class);
         exception.expectCause(instanceOf(FileNotFoundException.class));
 
-        CsvReader.read(new File(""), ValueObject.class);
+        CsvReader.readAsObjects(new File(""), ValueObject.class);
     }
 
     @Test
@@ -47,7 +47,7 @@ public class CsvReaderTest {
         exception.expectCause(instanceOf(InstantiationException.class));
 
         File file = new File(getClass().getResource("/WithSomeValues.csv").toURI());
-        CsvReader.read(file, Interface.class);
+        CsvReader.readAsObjects(file, Interface.class);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class CsvReaderTest {
         exception.expectCause(instanceOf(InstantiationException.class));
 
         File file = new File(getClass().getResource("/WithSomeValues.csv").toURI());
-        CsvReader.read(file, NoDefaultConstructor.class);
+        CsvReader.readAsObjects(file, NoDefaultConstructor.class);
     }
 
     @Test
@@ -65,7 +65,7 @@ public class CsvReaderTest {
         exception.expectCause(instanceOf(IllegalAccessException.class));
 
         File file = new File(getClass().getResource("/WithSomeValues.csv").toURI());
-        CsvReader.read(file, Class.class);
+        CsvReader.readAsObjects(file, Class.class);
     }
 
     @Test
@@ -74,13 +74,13 @@ public class CsvReaderTest {
         exception.expectCause(instanceOf(NoSuchFieldException.class));
 
         File file = new File(getClass().getResource("/WithWrongHeaders.csv").toURI());
-        CsvReader.read(file, ValueObject.class);
+        CsvReader.readAsObjects(file, ValueObject.class);
     }
 
     @Test
     public void testThatEmptyFileGivesEmptyList() throws Exception {
         File file = new File(getClass().getResource("/Empty.csv").toURI());
-        List<ValueObject> objects = CsvReader.read(file, ValueObject.class);
+        List<ValueObject> objects = CsvReader.readAsObjects(file, ValueObject.class);
 
         assertThat(objects, notNullValue());
         assertThat(objects.size(), is(0));
@@ -89,7 +89,7 @@ public class CsvReaderTest {
     @Test
     public void testThatFileWithSomeValuesIsParsedCorrectly() throws Exception {
         File file = new File(getClass().getResource("/WithSomeValues.csv").toURI());
-        List<ValueObject> objects = CsvReader.read(file, ValueObject.class);
+        List<ValueObject> objects = CsvReader.readAsObjects(file, ValueObject.class);
 
         assertThat(objects, notNullValue());
         assertThat(objects.size(), is(1));
@@ -102,7 +102,7 @@ public class CsvReaderTest {
     @Test
     public void testThatFileWithAllValuesIsParsedCorrectly() throws Exception {
         File file = new File(getClass().getResource("/WithAllValues.csv").toURI());
-        List<ValueObject> objects = CsvReader.read(file, ValueObject.class);
+        List<ValueObject> objects = CsvReader.readAsObjects(file, ValueObject.class);
 
         assertThat(objects, notNullValue());
         assertThat(objects.size(), is(3));

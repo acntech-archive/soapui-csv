@@ -10,17 +10,76 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Field;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CsvReader {
 
-    public static <T> List<T> read(File csvFile, Class<T> valueObjectClass) {
-        return read(csvFile, valueObjectClass, CSVFormat.DEFAULT.withHeader());
+    public static List<File> findCsvFiles(File csvRootDir) {
+        if (csvRootDir == null) {
+            throw new IllegalArgumentException("CSV files root directory is null");
+        }
+        List<File> fileList = new ArrayList<>();
+        findCsvFiles(csvRootDir.toPath(), fileList);
+        return fileList;
     }
 
-    private static <T> List<T> read(File csvFile, Class<T> valueObjectClass, CSVFormat csvFormat) {
+    private static void findCsvFiles(Path rootDir, List<File> fileList) {
+        if (rootDir == null) {
+            throw new IllegalArgumentException("CSV files root directory is null");
+        }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(rootDir)) {
+            stream.forEach(path -> {
+                File file = path.toFile();
+                if (file.isFile()) {
+                    fileList.add(file);
+                } else if (file.isDirectory()) {
+                    findCsvFiles(path, fileList);
+                }
+            });
+        } catch (IOException e) {
+            throw new CsvReaderException("Unable to read from directory", e);
+        }
+    }
+
+    public static List<CsvRow> readAsCsvRows(File csvFile) {
+        return readAsCsvRows(csvFile, CSVFormat.DEFAULT.withHeader());
+    }
+
+    private static List<CsvRow> readAsCsvRows(File csvFile, CSVFormat csvFormat) {
+        if (csvFile == null) {
+            throw new IllegalArgumentException("CSV input file is null");
+        }
+        try (Reader reader = new FileReader(csvFile); CSVParser parser = new CSVParser(reader, csvFormat)) {
+            Map<String, Integer> headerMap = parser.getHeaderMap();
+            if (headerMap == null) {
+                throw new CsvReaderException("Header row is missing in CSV file");
+            }
+
+            return parser.getRecords().stream().map(csvRecord -> parseCsvRow(headerMap, csvRecord)).collect(Collectors.toList());
+        } catch (FileNotFoundException e) {
+            throw new CsvReaderException("Could not find CSV file", e);
+        } catch (IOException e) {
+            throw new CsvReaderException("Could not parse CSV file", e);
+        }
+    }
+
+    private static CsvRow parseCsvRow(Map<String, Integer> headerMap, CSVRecord csvRecord) {
+        CsvRow csvRow = new CsvRow();
+        headerMap.keySet().forEach(csvHeader -> csvRow.put(csvHeader, csvRecord.get(csvHeader)));
+        return csvRow;
+    }
+
+    public static <T> List<T> readAsObjects(File csvFile, Class<T> valueObjectClass) {
+        return readAsObjects(csvFile, valueObjectClass, CSVFormat.DEFAULT.withHeader());
+    }
+
+    private static <T> List<T> readAsObjects(File csvFile, Class<T> valueObjectClass, CSVFormat csvFormat) {
         if (csvFile == null) {
             throw new IllegalArgumentException("CSV input file is null");
         }
@@ -33,7 +92,7 @@ public class CsvReader {
                 throw new CsvReaderException("Header row is missing in CSV file");
             }
 
-            return parser.getRecords().stream().map(csvRecord -> parse(headerMap, csvRecord, valueObjectClass)).collect(Collectors.toList());
+            return parser.getRecords().stream().map(csvRecord -> parseObject(headerMap, csvRecord, valueObjectClass)).collect(Collectors.toList());
         } catch (FileNotFoundException e) {
             throw new CsvReaderException("Could not find CSV file", e);
         } catch (IOException e) {
@@ -41,7 +100,7 @@ public class CsvReader {
         }
     }
 
-    private static <T> T parse(Map<String, Integer> headerMap, CSVRecord csvRecord, Class<T> valueObjectClass) {
+    private static <T> T parseObject(Map<String, Integer> headerMap, CSVRecord csvRecord, Class<T> valueObjectClass) {
         try {
             T valueObject = valueObjectClass.newInstance();
 

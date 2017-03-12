@@ -56,7 +56,7 @@ if ( !csvFile.exists() ) {
 } else {
 	log.info( "Reading CSV file $csvFile.absolutePath" )
 	
-	def csvRecords = CsvReader.read( csvFile, Person.class )
+	def csvRecords = CsvReader.readAsObjects( csvFile, Person.class )
 
 	log.info( "Found $csvRecords.size CSV records in file" )
 
@@ -79,7 +79,45 @@ if ( !csvFile.exists() ) {
          <firstName xsi:type="xsd:string">${#TestCase#firstName}</firstName>
       </urn:sayHello>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="sayHello" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties><con:property><con:name>firstName</con:name><con:value>Thomas</con:value></con:property><con:property><con:name>lastName</con:name><con:value>Johansen</con:value></con:property></con:properties></con:testCase><con:properties><con:property><con:name>testSuiteName</con:name><con:value>HelloBinding TestSuite</con:value></con:property><con:property><con:name>testCaseName</con:name><con:value>sayHello TestCase</con:value></con:property><con:property><con:name>csvFileName</con:name><con:value>/home/thomas/work/acntech/workspace/names.csv</con:value></con:property><con:property><con:name>thinkTime</con:name><con:value>200</con:value></con:property><con:property><con:name>webserviceURL</con:name><con:value>http://localhost:8080/HelloService</con:value></con:property></con:properties></con:testSuite><con:mockService id="e5ff88c3-d5f5-4c55-92ab-2b0828659eb9" port="8080" path="/HelloService" host="localhost" name="HelloBinding MockService" outgoingWss="" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-version">false</con:setting></con:settings><con:properties/><con:mockOperation name="sayHello" id="678aea13-3598-40f0-9b95-f420b5ef6625" interface="HelloBinding" operation="sayHello"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Response 1" id="54212317-be0c-4045-885c-166bd6e66d5e" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:script>def holder = new com.eviware.soapui.support.XmlHolder( mockRequest.requestContent )
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig action="sayHello" mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties><con:property><con:name>firstName</con:name><con:value>Thomas</con:value></con:property><con:property><con:name>lastName</con:name><con:value>Johansen</con:value></con:property></con:properties></con:testCase><con:testCase id="602c01b0-fc08-42ca-ad6c-597f8adf9070" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Copy of Controller TestCase" searchProperties="true"><con:settings/><con:testStep type="groovy" name="CSV Runner" id="cb0ba51a-c779-494b-96d7-8baf43889ff3"><con:settings/><con:config><script>import no.acntech.test.csv.CsvReader
+import no.acntech.test.csv.CsvRow
+
+def testSuiteName = testRunner.testCase.testSuite.getPropertyValue( "testSuiteName" )
+def testCaseName = testRunner.testCase.testSuite.getPropertyValue( "testCaseName" )
+def csvFileName = testRunner.testCase.testSuite.getPropertyValue( "csvFileName" )
+def thinkTime = testRunner.testCase.testSuite.getPropertyValue( "thinkTime" )
+
+def thinkTimeMillis = Long.parseLong( thinkTime )
+def csvFile = new File( csvFileName as String )
+def asyncRun = false;
+
+if ( !csvFile.exists() ) {
+	log.error( "CSV file $csvFile.absolutePath does not exist" )
+} else if ( !csvFile.isFile() ) {
+	log.error( "$csvFile.absolutePath is not a file" )
+} else {
+	log.info( "Reading CSV file $csvFile.absolutePath" )
+	
+	def csvRows = CsvReader.readAsCsvRows( csvFile )
+
+	log.info( "Found $csvRows.size CSV records in file" )
+
+	def tc = testRunner.testCase.testSuite.project.testSuites[testSuiteName].testCases[testCaseName]
+	
+	for ( csvRow in csvRows ) {
+		for ( csvHeader in csvRow.getHeaders() ) {
+			def csvValue = csvRow.getString ( csvHeader )
+			log.debug( "Setting property $csvHeader=$csvValue" )
+			tc.setPropertyValue( csvHeader, csvValue )
+		}
+		
+		def runner = tc.run( null, asyncRun )
+		
+		log.debug( "Status: $runner.status, time taken for TestCase was: $runner.timeTaken ms" )
+
+		sleep( thinkTimeMillis )
+	}
+}</script></con:config></con:testStep><con:properties/></con:testCase><con:properties><con:property><con:name>testSuiteName</con:name><con:value>HelloBinding TestSuite</con:value></con:property><con:property><con:name>testCaseName</con:name><con:value>sayHello TestCase</con:value></con:property><con:property><con:name>csvFileName</con:name><con:value>/home/thomas/work/acntech/workspace/soapui-csv/soapui-runner/src/test/names.csv</con:value></con:property><con:property><con:name>thinkTime</con:name><con:value>200</con:value></con:property><con:property><con:name>webserviceURL</con:name><con:value>http://localhost:8080/HelloService</con:value></con:property></con:properties></con:testSuite><con:mockService id="e5ff88c3-d5f5-4c55-92ab-2b0828659eb9" port="8080" path="/HelloService" host="localhost" name="HelloBinding MockService" outgoingWss="" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-version">false</con:setting></con:settings><con:properties/><con:mockOperation name="sayHello" id="678aea13-3598-40f0-9b95-f420b5ef6625" interface="HelloBinding" operation="sayHello"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Response 1" id="54212317-be0c-4045-885c-166bd6e66d5e" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:script>def holder = new com.eviware.soapui.support.XmlHolder( mockRequest.requestContent )
 def firstName = holder["//firstName"]
 def greeting = "Hello $firstName!"
 log.info( greeting )
