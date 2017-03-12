@@ -1,0 +1,4 @@
+stringField,integerField,longField,booleanField
+Row1,1,1,true
+Row2,2,2,false
+Row3,3,3,true
